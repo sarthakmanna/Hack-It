@@ -5,6 +5,7 @@ dirLocation = "/home/sarthakmanna/Desktop"
 
 code = lang = filename = None
 
+
 def scrape(url):
     global code, lang, filename, dirLocation
 
@@ -27,6 +28,7 @@ def saveToFile(fileLocation, contents):
     file.write(contents)
     file.close()
 
+
 def compile(command):
     print(command)
     process = subprocess.Popen(command.split(), cwd = '/')
@@ -35,19 +37,16 @@ def compile(command):
 
 def execute(command, inputFileLoc, outputFileLoc):
     print(command)
-    inputFile, outputFile = open(inputFileLoc), open(outputFileLoc)
-    arg = command + " < " + inputFile.read() + " > " + outputFile.read()
-    subprocess.run(arg, shell=True)
-
-    inputFile.close()
-    outputFile.close()
-
+    arg = command + " < " + inputFileLoc + " > " + outputFileLoc
+    process = subprocess.run(arg, shell=True, cwd = "/")
+    if process.returncode != 0:
+        raise Exception
 
 
 inputFileLoc = "/home/sarthakmanna/Desktop/input.txt"
 outputFileLoc = "/home/sarthakmanna/Desktop/output.txt"
 
-scrape("http://codeforces.com/contest/1076/submission/45693048")
+scrape("http://codeforces.com/contest/1061/submission/46069671")
 fileLocation = dirLocation + '/' + filename
 saveToFile(fileLocation, code)
 
