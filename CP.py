@@ -36,8 +36,8 @@ def compile(command):
 def execute(command, inputFileLoc, outputFileLoc):
     print(command)
     inputFile, outputFile = open(inputFileLoc), open(outputFileLoc)
-
-    # <-------------------------------------- Problem here
+    arg = command + " < " + inputFile.read() + " > " + outputFile.read()
+    subprocess.run(arg, shell=True)
 
     inputFile.close()
     outputFile.close()
