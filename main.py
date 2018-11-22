@@ -36,17 +36,18 @@ def compile(command):
 
 
 def execute(command, inputFileLoc, outputFileLoc):
-    print(command)
     arg = command + " < " + inputFileLoc + " > " + outputFileLoc
-    process = subprocess.run(arg, shell=True, cwd = "/")
+    print(arg)
+    process = subprocess.run(arg, shell = True, cwd = "/")
     if process.returncode != 0:
         raise Exception
 
 
 inputFileLoc = "/home/sarthakmanna/Desktop/input.txt"
 outputFileLoc = "/home/sarthakmanna/Desktop/output.txt"
+answerLocation = "/home/sarthakmanna/Desktop/answer.txt"
 
-scrape("http://codeforces.com/contest/1061/submission/46069671")
+scrape("http://codeforces.com/contest/1061/submission/46065597")
 fileLocation = dirLocation + '/' + filename
 saveToFile(fileLocation, code)
 
@@ -74,3 +75,21 @@ elif "py" in lang:
                 execute("python " + pyExecutable, inputFileLoc, outputFileLoc)
             except:
                 pass
+
+
+def readFromFile(fileLocation):
+    file = open(fileLocation, "r")
+    contents = ''.join(file.readlines())
+    file.close()
+    return contents
+
+
+def checkOutput(output, answer):
+    output = output.split()
+    answer = answer.split()
+    return output == answer
+
+
+outputContents = readFromFile(outputFileLoc)
+answerContents = readFromFile(answerLocation)
+print(checkOutput(outputContents, answerContents))
