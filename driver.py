@@ -23,7 +23,7 @@ browser.get(url)
 def parse_accepted_ids(result):
     for line in result.splitlines():
         if line.split()[1] == 'Accepted':
-            print(line.split()[3])
+            #print(line.split()[3])
             return line.split()[3]
 
 
