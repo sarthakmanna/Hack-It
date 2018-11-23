@@ -24,11 +24,12 @@ problem_id_start = 253925
 
 
 
-def parse_accepted_ids(result):
+def add_parsed_accepted_ids(result):
     for line in result.splitlines():
         if line.split()[1] == 'Accepted':
             #print(line.split()[3])
-            return line.split()[3]
+            accepted_ids.append(line.split()[3])
+            #return line.split()[3]
 
 
 def re_adjust(browser):
@@ -75,7 +76,7 @@ for index in range(start, end+1):
             time.sleep(0.5)
             elem2 = browser.find_element_by_xpath("//div[@id='facebox']")
 
-            accepted_ids.append(parse_accepted_ids(elem2.text))
+            add_parsed_accepted_ids(elem2.text)
 
             action2 = ActionChains(browser)
 
