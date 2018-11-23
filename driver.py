@@ -39,6 +39,7 @@ for participant_id in participant_ids:
 
         action0.send_keys([Keys.DOWN] * 2)
         action0.perform()
+        time.sleep(0.5)
     for problem_count in range(7):
         problem_id = problem_start + problem_count
 
@@ -47,6 +48,8 @@ for participant_id in participant_ids:
         # elem_temp = browser.find_element_by_xpath("//div[@id='body']//div[@id='pageContent']/div[@class='datatable']//table[@class='standings']//tr[@participantid='21001268']/td[@problemid='253927']")
 
         elem = browser.find_element_by_xpath(XML_PATH)
+        if elem.get_attribute('acceptedsubmissionid') is None:
+            continue
         action = ActionChains(browser)
         action.double_click(elem)
 
