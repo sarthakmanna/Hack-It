@@ -33,7 +33,8 @@ def add_parsed_accepted_ids(result):
 
 
 def re_adjust(browser):
-    browser.maximize_window()
+    #browser.maximize_window()
+    browser.set_window_size(1855,1056)
     print(browser.get_window_size())
     action = ActionChains(browser)
     action.send_keys([Keys.CONTROL, '0'])
