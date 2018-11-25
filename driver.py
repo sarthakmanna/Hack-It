@@ -1,6 +1,7 @@
 import time
 from selenium.webdriver.common.action_chains import ActionChains
-import requests,bs4,webbrowser,pprint
+import requests
+import bs4
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
@@ -21,9 +22,6 @@ start, end = tuple(map(int,input().split()))
 
 problem_id_start = 253925
 
-
-
-
 def add_parsed_accepted_ids(result):
     for line in result.splitlines():
         if line.split()[1] == 'Accepted':
@@ -32,14 +30,12 @@ def add_parsed_accepted_ids(result):
             #return line.split()[3]
 
 
-def re_adjust(browser):
-    #browser.maximize_window()
-    browser.set_window_size(1855,1056)
-    print(browser.get_window_size())
-    action = ActionChains(browser)
-    action.send_keys([Keys.CONTROL, '0'])
-    action.perform()
-    time.sleep(0.5)
+def re_adjust(self, browser):
+        browser.maximize_window()
+        action = ActionChains(browser)
+        action.send_keys([Keys.CONTROL, '0'])
+        action.perform()
+        time.sleep(0.5)
 
 accepted_ids = []
 count = 0
@@ -54,8 +50,6 @@ for index in range(start, end+1):
         problem_start = problem_id_start
         if count % 3 == 0:
             action0 = ActionChains(browser)
-            from selenium.webdriver.common.keys import Keys
-
             action0.send_keys([Keys.DOWN] * 2)
             action0.perform()
             time.sleep(0.5)
