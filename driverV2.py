@@ -7,11 +7,10 @@ from selenium.webdriver.common.keys import Keys
 
 
 class Driver:
-    def __init__(self, contest_id, problem_start_id, participants_per_page):
+    def __init__(self, contest_id, problem_start_id):
         self.base_url = "https://codeforces.com/contest/" + contest_id + "/standings/page/"
         self.participant_ids = []
         self.problem_start_id = problem_start_id
-        self.participants_per_page = participants_per_page
         self.browser = webdriver.Firefox()
 
     def scrape_participant_ids(self, url):
@@ -92,12 +91,10 @@ class Driver:
 
 print("Enter the Contest ID")
 contest_id = input()
-print("Enter participants per page")
-participants_per_page = int(input())
 print('Enter problem start id')
 problem_start_id = int(input())
 print("Enter the start and end page index")
 start, end = tuple(map(int, input().split()))
 
-driver = Driver(contest_id, problem_start_id, participants_per_page)
+driver = Driver(contest_id, problem_start_id)
 driver.start(start, end)
