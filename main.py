@@ -1,13 +1,13 @@
+from pathlib import Path
+import os
 import subprocess, requests
 from bs4 import BeautifulSoup
-
-dirLocation = "/home/sarthakmanna/Desktop"
 
 code = lang = filename = None
 
 
 def scrape(url):
-    global code, lang, filename, dirLocation
+    global code, lang, filename
 
     url = requests.get(url, headers = {'User-Agent' : "Mozilla/5.0"})
     parser = BeautifulSoup(url.text, "lxml")
@@ -23,58 +23,51 @@ def scrape(url):
         break
 
 
-def saveToFile(fileLocation, contents):
-    file = open(fileLocation, "w")
+def saveToFile(fileLocation, contents, mode = "w+"):
+    file = open(fileLocation, mode)
     file.write(contents)
     file.close()
 
 
-def compile(command):
+def execute(command, inputFileLoc = None, outputFileLoc = None):
+    if inputFileLoc is not None:
+        command = command + " < " + inputFileLoc
+    if outputFileLoc is not None:
+        command = command + " > " + outputFileLoc
     print(command)
-    process = subprocess.Popen(command.split(), cwd = '/')
-    process.wait()
-
-
-def execute(command, inputFileLoc, outputFileLoc):
-    arg = command + " < " + inputFileLoc + " > " + outputFileLoc
-    print(arg)
-    process = subprocess.run(arg, shell = True, cwd = "/")
+    process = subprocess.run(command, shell = True, cwd = "/")
     if process.returncode != 0:
         raise Exception
 
 
-inputFileLoc = "/home/sarthakmanna/Desktop/input.txt"
-outputFileLoc = "/home/sarthakmanna/Desktop/output.txt"
-answerLocation = "/home/sarthakmanna/Desktop/answer.txt"
+def runCode(dirLocation, filename, lang, inputFileLoc, outputFileLoc, skipCompiling = 0):
+    lang = lang.lower()
+    fileLocation = dirLocation + "/" + filename
 
-scrape("http://codeforces.com/contest/1061/submission/46065597")
-fileLocation = dirLocation + '/' + filename
-saveToFile(fileLocation, code)
+    if 'java' in lang:
+        if not skipCompiling:
+            execute("javac " + fileLocation)
+        execute("java -cp " + dirLocation + " " + filename[0 : -5],
+                inputFileLoc, outputFileLoc)
 
-#print(code)
-print(lang)
-print(filename)
+    elif 'c++' in lang or 'cpp' in lang:
+        cppExecutable = dirLocation + '/' + filename[0 : -4]
+        if not skipCompiling:
+            execute("g++ -o " + cppExecutable + " -O2 -std=c++14 " + fileLocation)
+        execute("." + cppExecutable, inputFileLoc, outputFileLoc)
 
-if 'java' in lang:
-    compile("javac " + fileLocation)
-    execute("java -cp " + dirLocation + " " + filename[0 : -5],
-            inputFileLoc, outputFileLoc)
-elif 'c++' in lang:
-    cppExecutable = dirLocation + '/' + filename[0 : -4]
-    compile("g++ -o " + cppExecutable + " -O2 -std=c++14 " + fileLocation)
-    execute("." + cppExecutable, inputFileLoc, outputFileLoc)
-elif "py" in lang:
-    pyExecutable = fileLocation
-    try:
-        execute("python2 " + pyExecutable, inputFileLoc, outputFileLoc)
-    except:
+    elif "py" in lang:
+        pyExecutable = fileLocation
         try:
-            execute("python3 " + pyExecutable, inputFileLoc, outputFileLoc)
+            execute("python2 " + pyExecutable, inputFileLoc, outputFileLoc)
         except:
             try:
-                execute("python " + pyExecutable, inputFileLoc, outputFileLoc)
+                execute("python3 " + pyExecutable, inputFileLoc, outputFileLoc)
             except:
-                pass
+                try:
+                    execute("python " + pyExecutable, inputFileLoc, outputFileLoc)
+                except:
+                    pass
 
 
 def readFromFile(fileLocation):
@@ -84,12 +77,64 @@ def readFromFile(fileLocation):
     return contents
 
 
-def checkOutput(output, answer):
+def matchOutputs(output, answer):
     output = output.split()
     answer = answer.split()
     return output == answer
 
 
-outputContents = readFromFile(outputFileLoc)
-answerContents = readFromFile(answerLocation)
-print(checkOutput(outputContents, answerContents))
+
+
+solutionID = "45607640"
+scrapeUrl = "https://codeforces.com/contest/1076/submission/" + solutionID
+problemCode = "A"
+
+
+
+homeDir = str(Path.home())
+dirLocation = homeDir + "/Desktop/" + problemCode
+hackInfoFile = homeDir + "/Desktop/Hackable"
+inputFileLoc = dirLocation + "/input"
+outputFileLoc = dirLocation + "/output"
+answerLocation = dirLocation + "/answer"
+
+scrape(scrapeUrl)
+fileLocation = dirLocation + '/' + filename
+saveToFile(fileLocation, code)
+
+#print(code)
+#print(lang)
+#print(filename)
+
+
+
+for i in range(50):
+    runCode(dirLocation, "gen.py", "python", None, inputFileLoc)
+    runCode(dirLocation, "ActualSolution.cpp", "c++", inputFileLoc, answerLocation, True)
+    try:
+        runCode(dirLocation, filename, lang, inputFileLoc, outputFileLoc, i)
+        outputContents = readFromFile(outputFileLoc)
+        answerContents = readFromFile(answerLocation)
+        if not matchOutputs(outputContents, answerContents):
+            1/0
+        print ("Passed")
+    except:
+        print ("Try hacking " + solutionID)
+        #print (readFromFile(inputFileLoc))
+        saveToFile(hackInfoFile + "/" + solutionID, readFromFile(inputFileLoc))
+        break
+
+
+if os.path.exists(dirLocation + "/" + filename):
+    os.remove(dirLocation + "/" + filename)
+if os.path.exists(dirLocation + "/" + filename[0 : -5] + ".class"):
+    os.remove(dirLocation + "/" + filename[0 : -5] + ".class")
+if os.path.exists(dirLocation + "/" + filename[0 : -4]):
+    os.remove(dirLocation + "/" + filename[0 : -4])
+
+if os.path.exists(inputFileLoc):
+    os.remove(inputFileLoc)
+if os.path.exists(outputFileLoc):
+    os.remove(outputFileLoc)
+if os.path.exists(answerLocation):
+    os.remove(answerLocation)
