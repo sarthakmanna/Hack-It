@@ -1,6 +1,5 @@
 from pathlib import Path
-import os
-import subprocess, requests
+import os, time, subprocess, requests
 from bs4 import BeautifulSoup
 
 code = lang = filename = None
@@ -83,58 +82,72 @@ def matchOutputs(output, answer):
     return output == answer
 
 
+desktopPath = str(Path.home()) + "/Desktop"
 
+def hack_it(solutionID, problemCode):
+    scrapeUrl = "https://codeforces.com/contest/1076/submission/" + solutionID
 
-solutionID = "45607640"
-scrapeUrl = "https://codeforces.com/contest/1076/submission/" + solutionID
-problemCode = "A"
+    dirLocation = desktopPath + "/" + problemCode
+    hackInfoFile = desktopPath + "/Hackable"
+    inputFileLoc = dirLocation + "/input"
+    outputFileLoc = dirLocation + "/output"
+    answerLocation = dirLocation + "/answer"
 
+    scrape(scrapeUrl)
+    fileLocation = dirLocation + '/' + filename
+    saveToFile(fileLocation, code)
 
-
-homeDir = str(Path.home())
-dirLocation = homeDir + "/Desktop/" + problemCode
-hackInfoFile = homeDir + "/Desktop/Hackable"
-inputFileLoc = dirLocation + "/input"
-outputFileLoc = dirLocation + "/output"
-answerLocation = dirLocation + "/answer"
-
-scrape(scrapeUrl)
-fileLocation = dirLocation + '/' + filename
-saveToFile(fileLocation, code)
-
-#print(code)
-#print(lang)
-#print(filename)
+    #print(code)
+    #print(lang)
+    #print(filename)
 
 
 
-for i in range(50):
-    runCode(dirLocation, "gen.py", "python", None, inputFileLoc)
-    runCode(dirLocation, "ActualSolution.cpp", "c++", inputFileLoc, answerLocation, True)
+    for i in range(70):
+        runCode(dirLocation, "gen.py", "python", None, inputFileLoc)
+        runCode(dirLocation, "ActualSolution.cpp", "c++", inputFileLoc, answerLocation, True)
+        try:
+            runCode(dirLocation, filename, lang, inputFileLoc, outputFileLoc, i)
+            outputContents = readFromFile(outputFileLoc)
+            answerContents = readFromFile(answerLocation)
+            if not matchOutputs(outputContents, answerContents):
+                1/0
+            print ("Passed")
+        except:
+            print ("Try hacking " + solutionID)
+            #print (readFromFile(inputFileLoc))
+            saveToFile(hackInfoFile + "/" + solutionID, readFromFile(inputFileLoc))
+            break
+
+
+    if os.path.exists(dirLocation + "/" + filename):
+        os.remove(dirLocation + "/" + filename)
+    if os.path.exists(dirLocation + "/" + filename[0 : -5] + ".class"):
+        os.remove(dirLocation + "/" + filename[0 : -5] + ".class")
+    if os.path.exists(dirLocation + "/" + filename[0 : -4]):
+        os.remove(dirLocation + "/" + filename[0 : -4])
+
+    if os.path.exists(inputFileLoc):
+        os.remove(inputFileLoc)
+    if os.path.exists(outputFileLoc):
+        os.remove(outputFileLoc)
+    if os.path.exists(answerLocation):
+        os.remove(answerLocation)
+
+
+last = 0
+while True:
+    ids = readFromFile(desktopPath + "/acceptedIDs").split("\n")
+    while len(ids[-1]) < 2:
+        ids.pop()
     try:
-        runCode(dirLocation, filename, lang, inputFileLoc, outputFileLoc, i)
-        outputContents = readFromFile(outputFileLoc)
-        answerContents = readFromFile(answerLocation)
-        if not matchOutputs(outputContents, answerContents):
-            1/0
-        print ("Passed")
+        if last >= len(ids):
+            print ("Waiting for new IDs...")
+            time.sleep(1)
+        while last < len(ids):
+            solutionDetails = ids[last].split()
+            hack_it(solutionDetails[0], chr(int(solutionDetails[1]) + ord("A")))
+            last += 1
     except:
-        print ("Try hacking " + solutionID)
-        #print (readFromFile(inputFileLoc))
-        saveToFile(hackInfoFile + "/" + solutionID, readFromFile(inputFileLoc))
-        break
-
-
-if os.path.exists(dirLocation + "/" + filename):
-    os.remove(dirLocation + "/" + filename)
-if os.path.exists(dirLocation + "/" + filename[0 : -5] + ".class"):
-    os.remove(dirLocation + "/" + filename[0 : -5] + ".class")
-if os.path.exists(dirLocation + "/" + filename[0 : -4]):
-    os.remove(dirLocation + "/" + filename[0 : -4])
-
-if os.path.exists(inputFileLoc):
-    os.remove(inputFileLoc)
-if os.path.exists(outputFileLoc):
-    os.remove(outputFileLoc)
-if os.path.exists(answerLocation):
-    os.remove(answerLocation)
+        pass
+        print ("Error encountered while parsing accepted IDs...")
