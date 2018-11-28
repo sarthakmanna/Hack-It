@@ -4,14 +4,22 @@ import requests
 import bs4
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+import os
+import sys
+from pathlib import Path
+import webbrowser
+
 
 
 class Driver:
-    def __init__(self, contest_id, problem_start_id):
-        self.base_url = "https://codeforces.com/contest/" + contest_id + "/standings/page/"
-        self.participant_ids = []
-        self.problem_start_id = problem_start_id
-        self.browser = webdriver.Firefox()
+    def __init__(self, contest_id):
+            self.browser = webdriver.Firefox()
+            self.base_url = "https://codeforces.com/contest/" + contest_id + "/standings/page/"
+            self.participant_ids = []
+            self.problem_ids = []
+            self.desktop_dir = str(Path.home())+"/Desktop/"
+            self.submissions_ids = set()
+
 
     def scrape_participant_ids(self, url):
         self.participant_ids = []
@@ -19,16 +27,20 @@ class Driver:
         page_result.raise_for_status()
         parser = bs4.BeautifulSoup(page_result.text)
         parse_result = parser.find_all("tr")
+        """FInding participant ID's"""
         for i in range(1, len(parse_result) - 2):
             self.participant_ids.append(parse_result[i]['participantid'])
 
-    def add_parsed_accepted_ids(self, result):
+        """Finding problem ID's"""
+        parse_result = parse_result[1].find_all("td")
+        self.problem_ids = [problems['problemid'] for problems in parse_result if problems.get('problemid') is not None]
 
-        with open('accepted_ids', 'a+') as f:
+    def add_parsed_accepted_ids(self, result, problem_id):
+
+        with open(self.desktop_dir + '/accepted_ids.txt', 'a+') as f:
             for line in result.splitlines():
                 if line.split()[1] == 'Accepted':
-                    f.write(line.split()[3])
-
+                    f.write(line.split()[3]+" "+str(self.problem_ids.index(problem_id))+"\n")
         f.close()
 
     def re_adjust(self):
@@ -65,13 +77,10 @@ class Driver:
             driver.scrape_participant_ids(self.base_url+str(index))
             for participant_id in self.participant_ids:
                 count += 1
-                problem_start = self.problem_start_id
                 if count % 3 == 0:
                     self.down_scroll()
 
-                for problem_count in range(7):
-                    problem_id = problem_start + problem_count
-
+                for problem_id in self.problem_ids:
                     XML_PATH = "//div[@id='body']//div[@id='pageContent']/div[@class='datatable']" \
                                "//table[@class='standings']//tr[@participantid=" + \
                                participant_id + "]/" \
@@ -81,20 +90,34 @@ class Driver:
                         continue
                     self.double_click(web_element)
                     text = ''
-                    while text != '':
+                    while text == '':
                         popup = self.browser.find_element_by_xpath("//div[@id='facebox']")
                         text = popup.text
-                        self.add_parsed_accepted_ids(text)
 
+                    self.add_parsed_accepted_ids(text, problem_id)
                     self.close_popup()
+
+    def start_hack(self, contest_id):
+        while True:
+            files = os.listdir(self.desktop_dir + "Hackable/")
+            for name in files:
+
+                #print("https://codeforces.com/contest/"+contest_id+"/submission/"+name)
+                if name not in self.submissions_ids:
+                    webbrowser.open("https://codeforces.com/contest/"+contest_id+"/submission/"+name)
+                self.submissions_ids.add(name)
+                time.sleep(20)
 
 
 print("Enter the Contest ID")
-contest_id = input()
-print('Enter problem start id')
-problem_start_id = int(input())
+contest_id = str(1076)#input()
 print("Enter the start and end page index")
-start, end = tuple(map(int, input().split()))
+start, end = (1,1)#tuple(map(int, input().split()))
+arg = None if len(sys.argv) == 1 else sys.argv[1]
+driver = Driver(contest_id)
+if arg is None:
+    driver.start(start, end)
+else:
+    driver.start_hack(contest_id)
 
-driver = Driver(contest_id, problem_start_id)
-driver.start(start, end)
+
