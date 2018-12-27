@@ -4,10 +4,8 @@ import requests
 import bs4
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-import os
-import sys
 from pathlib import Path
-import webbrowser
+
 
 
 
@@ -19,7 +17,6 @@ class Driver:
             self.problem_ids = []
             self.desktop_dir = str(Path.home())+"/Desktop/"
             self.submissions_ids = set()
-
 
     def scrape_participant_ids(self, url):
         self.participant_ids = []
@@ -97,27 +94,12 @@ class Driver:
                     self.add_parsed_accepted_ids(text, problem_id)
                     self.close_popup()
 
-    def start_hack(self, contest_id):
-        while True:
-            files = os.listdir(self.desktop_dir + "Hackable/")
-            for name in files:
-
-                #print("https://codeforces.com/contest/"+contest_id+"/submission/"+name)
-                if name not in self.submissions_ids:
-                    webbrowser.open("https://codeforces.com/contest/"+contest_id+"/submission/"+name)
-                self.submissions_ids.add(name)
-                time.sleep(20)
-
 
 print("Enter the Contest ID")
-contest_id = str(1076)#input()
+contest_id = str(1095)#input()
 print("Enter the start and end page index")
-start, end = (1,1)#tuple(map(int, input().split()))
-arg = None if len(sys.argv) == 1 else sys.argv[1]
-driver = Driver(contest_id)
-if arg is None:
-    driver.start(start, end)
-else:
-    driver.start_hack(contest_id)
+start, end =tuple(map(int, input().split()))
 
+driver = Driver(contest_id)
+driver.start(start, end)
 
