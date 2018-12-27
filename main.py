@@ -155,8 +155,7 @@ while True:
             print ("Trying", end = ' ')
             print(solutionDetails)
 
-            if int(solutionDetails[1]) == 1:  # For the time being...
-                hack_it(solutionDetails[0], chr(int(solutionDetails[1]) + ord("A")))
+            hack_it(solutionDetails[0], chr(int(solutionDetails[1]) + ord("A")))
             last += 1
     except:
         pass
