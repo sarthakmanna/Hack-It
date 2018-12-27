@@ -46,13 +46,13 @@ def runCode(dirLocation, filename, lang, inputFileLoc, outputFileLoc, skipCompil
     if 'java' in lang:
         if not skipCompiling:
             execute("javac " + fileLocation)
-        execute("java -cp " + dirLocation + " " + filename[0 : -5],
+        execute("java -DONLINE_JUDGE=true -cp " + dirLocation + " " + filename[0 : -5],
                 inputFileLoc, outputFileLoc)
 
     elif 'c++' in lang or 'cpp' in lang:
         cppExecutable = dirLocation + '/' + filename[0 : -4]
         if not skipCompiling:
-            execute("g++ -o " + cppExecutable + " -O2 -std=c++14 " + fileLocation)
+            execute("g++ -DONLINE_JUDGE -o " + cppExecutable + " -O2 -std=c++14 " + fileLocation)
         execute("." + cppExecutable, inputFileLoc, outputFileLoc)
 
     elif "py" in lang:
@@ -68,7 +68,7 @@ def runCode(dirLocation, filename, lang, inputFileLoc, outputFileLoc, skipCompil
                 except:
                     pass
     else:
-        return -7
+        return False
 
 
 def readFromFile(fileLocation):
@@ -96,10 +96,6 @@ def hack_it(solutionID, problemCode):
     answerLocation = dirLocation + "/answer"
 
     scrape(scrapeUrl)
-
-    if "ONLINE_JUDGE" in code: #For the time being...
-        return
-
     fileLocation = dirLocation + '/' + filename
     saveToFile(fileLocation, code)
 
@@ -152,7 +148,7 @@ while True:
             time.sleep(1)
         while last < len(ids):
             solutionDetails = ids[last].split()
-            print ("Trying", end = ' ')
+            print ("Testing", end = ' ')
             print(solutionDetails)
 
             hack_it(solutionDetails[0], chr(int(solutionDetails[1]) + ord("A")))
