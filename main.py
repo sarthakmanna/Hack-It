@@ -67,6 +67,8 @@ def runCode(dirLocation, filename, lang, inputFileLoc, outputFileLoc, skipCompil
                     execute("python " + pyExecutable, inputFileLoc, outputFileLoc)
                 except:
                     pass
+    else:
+        return -7
 
 
 def readFromFile(fileLocation):
@@ -85,7 +87,7 @@ def matchOutputs(output, answer):
 desktopPath = str(Path.home()) + "/Desktop"
 
 def hack_it(solutionID, problemCode):
-    scrapeUrl = "https://codeforces.com/contest/1076/submission/" + solutionID
+    scrapeUrl = "https://codeforces.com/contest/1095/submission/" + solutionID
 
     dirLocation = desktopPath + "/" + problemCode
     hackInfoFile = desktopPath + "/Hackable"
@@ -94,6 +96,10 @@ def hack_it(solutionID, problemCode):
     answerLocation = dirLocation + "/answer"
 
     scrape(scrapeUrl)
+
+    if "ONLINE_JUDGE" in code: #For the time being...
+        return
+
     fileLocation = dirLocation + '/' + filename
     saveToFile(fileLocation, code)
 
@@ -103,16 +109,16 @@ def hack_it(solutionID, problemCode):
 
 
 
-    for i in range(70):
+    for i in range(50):
         runCode(dirLocation, "gen.py", "python", None, inputFileLoc)
         runCode(dirLocation, "ActualSolution.cpp", "c++", inputFileLoc, answerLocation, True)
         try:
-            runCode(dirLocation, filename, lang, inputFileLoc, outputFileLoc, i)
-            outputContents = readFromFile(outputFileLoc)
-            answerContents = readFromFile(answerLocation)
-            if not matchOutputs(outputContents, answerContents):
-                1/0
-            print ("Passed")
+            if runCode(dirLocation, filename, lang, inputFileLoc, outputFileLoc, i) is None:
+                outputContents = readFromFile(outputFileLoc)
+                answerContents = readFromFile(answerLocation)
+                if not matchOutputs(outputContents, answerContents):
+                    1/0
+                print ("Passed")
         except:
             print ("Try hacking " + solutionID)
             #print (readFromFile(inputFileLoc))
@@ -146,8 +152,12 @@ while True:
             time.sleep(1)
         while last < len(ids):
             solutionDetails = ids[last].split()
-            hack_it(solutionDetails[0], chr(int(solutionDetails[1]) + ord("A")))
+            print ("Trying", end = ' ')
+            print(solutionDetails)
+
+            if int(solutionDetails[1]) == 1:  # For the time being...
+                hack_it(solutionDetails[0], chr(int(solutionDetails[1]) + ord("A")))
             last += 1
     except:
         pass
-        print ("Error encountered while parsing accepted IDs...")
+print ("Error encountered while parsing accepted IDs...")
