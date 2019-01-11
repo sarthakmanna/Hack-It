@@ -25,11 +25,12 @@ class Hacker:
                 elem[1].send_keys(f.read())
                 time.sleep(1)
                 elem[1].submit()
+                time.sleep(1)
                 f.close()
             os.remove(self.hackable_dir + file)
 
 
 print("Enter contest ID")
-contest_id = int(input())
+contest_id = input()
 hacker = Hacker(contest_id)
 hacker.start()
